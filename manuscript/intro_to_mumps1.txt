@@ -1,0 +1,12 @@
+# A Quick Introduction to MUMPS
+## What is MUMPS?
+MUMPS is a text processing language with an integrated database. The database
+is integrated in the sense that you access the database directly from the
+language itself. There is no intermediate driver to get to the database.
+
+The acronym stands for Massachusetts General Hospital Utility Multi-Programming
+System. The language was designed by Neil Pappalardo in 1966; and it was 
+purposely designed to replace assembly language for medical use. Neil 
+Pappalordo went on to start Meditech, one of the large Electronic Medical 
+Records software to this day.
+
