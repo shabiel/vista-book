@@ -1,0 +1,62 @@
+Instructions to Install Routine Editor
+
+
+At the Ubuntu prompt type
+
+Ubuntu (username)$ vagrant ssh
+
+vagrant@vagrant-ubuntu-precise-32:~$ cd /tmp/
+
+vagrant@vagrant-ubuntu-precise-32:/tmp$
+wget https://github.com/mdgeek/VistA-Extensible-Editor/raw/master/kid/rged-3.0.kid
+
+vagrant@vagrant-ubuntu-precise-32:~/tmp$
+wget https://raw.githubusercontent.com/mdgeek/VistA-RG-Utilities/master/kid/rgut-3.0.kid
+
+
+vagrant@vagrant-ubuntu-precise-32:/tmp$ mumps -dir
+
+OSEHRA>D ^XPDIL,^XPDI
+
+Enter a Host File: /tmp/rgut-3.0.kid
+OK to continue with Load? NO// Yes
+Want to Continue with Load? YES// <enter>
+Select INSTALL NAME: RG<enter>
+Want KIDS to INHIBIT LOGONS during the install? NO// <enter>
+Want to DISABLE Scheduled Options, Menu Options, and Protocols? NO// <enter>
+
+Repeat for /tmp/rged-3.0.kid
+Want to Continue with Load? YES// <enter>
+Want to RUN the Environment Check Routine? YES// <enter>
+Select INSTALL NAME: EXT<enter>
+Want KIDS to Rebuild Menu Trees Upon Completion of Install? NO// <enter>
+Want KIDS to INHIBIT LOGONS during the install? NO// <enter>
+Want to DISABLE Scheduled Options, Menu Options, and Protocols? NO// <enter>
+
+
+D ^RGEDIT
+
+Access Code: SM1234
+
+Routine: RGEDTMPL
+
+Routine: <enter>
+
+RGEDTMPL is a routine template.
+
+New routine name: <enter a routine name, for example, your first name>
+Initials /SM/ : <enter your initials>
+Brief description : <enter a description, perhaps Test>
+Version /1.0/ :<enter>
+Package :<enter>
+
+Routine Editor should then come up.
+
+Use the arrow keys to move to the end of the last line, hit <enter>
+type W “Hello World!”,! <enter>
+type Q
+Hit PF1 E to exit
+
+OSEHRA>D ^<routine name>
+
+OSEHRA>H (to exit OSEHRA VistA)
