@@ -232,7 +232,7 @@ code).
 Command | Result | Explanation
 ------- | ------ | -----------
 `write 3*4 `| 12  | \* is multiply
-`write 3/4 `| .75 | / is divide. Divisions in M return the decimals| they are not
+`write 3/4 `| .75 | / is divide. Divisions in M return the decimals; they are not
 truncated to the integer.
 `write 3\4 `| 0 | Integer division
 `write 11\4 `| 2 | Integer division
