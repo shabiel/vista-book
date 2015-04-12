@@ -232,8 +232,7 @@ code).
 Command | Result | Explanation
 ------- | ------ | -----------
 `write 3*4 `| 12  | \* is multiply
-`write 3/4 `| .75 | / is divide. Divisions in M return the decimals; they are not
-truncated to the integer.
+`write 3/4 `| .75 | / is divide. Divisions in M return the decimals
 `write 3\4 `| 0 | Integer division
 `write 11\4 `| 2 | Integer division
 `write 6#4 `| 2 | Modulus (i.e. division remainder)
@@ -416,7 +415,7 @@ test  ; valid
 The current VISTA Standards and Conventions allow a variable to be in any case
 and have a maximum length of 16 characters. GT.M and Cache allow a length of
 32 characters. Exceeding this does not result in a syntax error, but any
-characters following the 32 will not be used to distinguish between labels.
+characters following the 32 will not be used to distinguish between variables.
 
 Variables are assigned values using the set command. E.g. `set x=55` or `set
 x="hello"`. Unlike other languages, the set command is required to precede
@@ -428,3 +427,217 @@ that its value is saved until you get out of the stack level that you newed.
 Examples of this will be shown in the below section
 
 ## Stack
+MUMPS implements a virtual stack... Never mind the virtual; just a stack.
+The stack levels are numbered, and they start at 0. The stack gets incremented
+by calling a new block of code using `DO`, running a user created function
+using `$$`, or excuting a string as code, using the `XECUTE` command. Don't
+worry about these concepts. We will get to them in due time.  The stack is very
+important for debugging: it shows a complete "staircase" for how you got into
+a statement that caused an error. I will present two examples, one of the
+routine we saw above; and one showing an error trap in VISTA, which displays
+the entire stack for debugging.
+
+### Example 1
+Invoke using main^circumference directly from the Operating System shell.
+Running it from programmer mode adds a stack level because programmer mode is
+itself considered a stack item.
+```
+circumference ; calculate the circumference of a circle 
+ ; 
+ write "Sorry. No entry from the top is allowed.",! 
+ ;
+main ; Main entry point
+ ; *Stack Level 0*
+ read x,"type enter to begin: ",!
+ write !!
+ new circ set circ=0
+ read "Enter a radius: ",rad,!
+ write !!
+ set circumference=$$calculate(rad)
+ write "circumference is "_circumference,!
+ quit
+ ;
+calculate(radius) ;
+ ; *Stack Level 1*
+ new circ ; this variable has the same name as the variable above, but it is
+          ; newed here. It "shadows" the original variable, so you do not have
+          ; access to the original variable until you exit out of this stack
+          ; level.
+ set circ=2*3.14*radius ; 2 pi r
+ quit circ
+ ;
+```
+### Example 2
+This is an example of a KIDS installation gone bad. We check the error trap.
+
+```
+PACKAGE: PX*1.0*201     Feb 01, 2015 11:19 am                         PAGE 1
+                                             COMPLETED           ELAPSED
+-------------------------------------------------------------------------------
+STATUS: Start of Install                  DATE LOADED: FEB 01, 2015@10:55:12
+INSTALLED BY: PROGRAMMER,ONE
+NATIONAL PACKAGE: PCE PATIENT CARE ENCOUNTER
+
+INSTALL STARTED: FEB 01, 2015@10:56:38
+
+ROUTINES:                                    10:56:38
+
+PRE-INIT CHECK POINTS:
+XPD PREINSTALL STARTED                       10:56:38
+XPD PREINSTALL COMPLETED                     10:56:38
+
+FILES:
+VACCINE INFORMATION STATEMENT                10:56:38
+IMMUNIZATION INFO SOURCE                     10:56:38
+IMM ADMINISTRATION ROUTE                     10:56:38
+IMM ADMINISTRATION SITE (BODY)               10:56:38
+V IMMUNIZATION                               10:56:38
+IMM MANUFACTURER                             10:56:38
+IMMUNIZATION                                 10:56:38
+IMMUNIZATION LOT                             10:56:38
+
+OPTION                                       10:56:39             0:00:01
+
+POST-INIT CHECK POINTS:
+XPD POSTINSTALL STARTED
+XPD POSTINSTALL COMPLETED
+
+INSTALL QUESTION PROMPT                                               ANSWER
+
+XPO1   Want KIDS to Rebuild Menu Trees Upon Completion of Install     NO
+XPI1   Want KIDS to INHIBIT LOGONs during the install                 NO
+XPZ1   Want to DISABLE Scheduled Options, Menu Options, and Protocols NO
+MESSAGES:
+
+ Install Started for PX*1.0*201 :
+               Feb 01, 2015@10:56:38
+
+Build Distribution Date: Nov 04, 2014
+
+ Installing Routines:
+               Feb 01, 2015@10:56:38
+
+ Running Pre-Install Routine: PRE^PXVP201
+
+ Installing Data Dictionaries:
+               Feb 01, 2015@10:56:38
+
+ Installing Data:
+               Feb 01, 2015@10:56:39
+
+ Installing PACKAGE COMPONENTS:
+
+ Installing OPTION
+               Feb 01, 2015@10:56:39
+
+ Running Post-Install Routine: POST^PXVP201
+
+<UNDEFINED>KUPXREF+13^BIUTL5 *Z
+```
+
+To display the error trap in VISTA after a crash, run `DO ^XTER`. Look at the
+$STACK variable array. While there is a lot that is not obvious, you can
+clearly see the incrementing stack. Please note that `D` is an abbreviation of
+`DO` and `X` `XECUTE`.
+
+
+```
+Process ID:  6915  (6915)               FEB 01, 2015 10:56:39
+UCI/VOL: [ROU:CACHEINV]                 
+$ZA:   0                                $ZB: \013
+Current $IO: /dev/pts/3                 Current $ZIO: #.#.#.#^43^19^/dev/
+pts/3
+$ZE= <UNDEFINED>KUPXREF+13^BIUTL5 *Z
+Last Global Ref: ^UTILITY("DIK",6915,9999999.14,.02,3)
+ S @(BIGBL_"""""_Z_"""",$E($$UPPER(X),1,30),DA)")=""
+$DEVICE=
+$ECODE=,M6,
+$ESTACK=17
+$ETRAP=D ERR^XPDIJ
+$QUIT=0
+$STACK=20
+$STACK(000)=
+$STACK(000,"ECODE")=
+$STACK(000,"PLACE")=@ +1
+$STACK(000,"MCODE")=D ^XUP
+$STACK(001)=DO
+$STACK(001,"ECODE")=
+$STACK(001,"PLACE")=ZIS2+9^XUP +3
+$STACK(001,"MCODE")= D KILL1^XUSCLEAN S $P(XQXFLG,U,3)="XUP" D ^XQ1
+$STACK(002)=DO
+$STACK(002,"ECODE")=
+$STACK(002,"PLACE")=R+2^XQ1 +1
+$STACK(002,"MCODE")= D @XQZ G OUT
+$STACK(003)=DO
+$STACK(003,"ECODE")=
+$STACK(003,"PLACE")=EN+19^XPDIJ +5
+$STACK(003,"MCODE")= F  S Y=$O(^XPD(9.7,"ASP",XPDA,Y)) Q:'Y  S %=$O(^(Y,0)) D:% 
+ Q:$D(XPDABORT)
+$STACK(004)=DO
+$STACK(004,"ECODE")=
+$STACK(004,"PLACE")=EN+22^XPDIJ +3
+$STACK(004,"MCODE")= .S XPDA=%,XPDNM=$P($G(^XPD(9.7,XPDA,0)),U) D IN^XPDIJ1 Q:$D
+(XPDABORT)
+$STACK(005)=DO
+$STACK(005,"ECODE")=
+$STACK(005,"PLACE")=IN+23^XPDIJ1 +1
+$STACK(005,"MCODE")= D POST:$G(XPDT("MASTER"))'=XPDA
+$STACK(006)=DO
+$STACK(006,"ECODE")=
+$STACK(006,"PLACE")=POST+2^XPDIJ1 +2
+$STACK(006,"MCODE")= I '$$VERCP^XPDUTL("XPD POSTINSTALL COMPLETED") D  Q:$D(XPDA
+BORT)
+$STACK(007)=DO
+$STACK(007,"ECODE")=
+$STACK(007,"PLACE")=POST+7^XPDIJ1 +5
+$STACK(007,"MCODE")= .F  S XPDCHECK=$O(^XPD(9.7,XPDA,"INIT",XPDCHECK)) Q:'XPDCHE
+CK  S XPD=^(XPDCHECK,0) D  Q:$D(XPDABORT)
+$STACK(008)=DO
+$STACK(008,"ECODE")=
+$STACK(008,"PLACE")=POST+15^XPDIJ1 +1
+$STACK(008,"MCODE")= ..D @XPDRTN
+$STACK(009)=DO
+$STACK(009,"ECODE")=
+$STACK(009,"PLACE")=POST+13^PXVP201 +1
+$STACK(009,"MCODE")= D DATA  ;restores backup
+$STACK(010)=DO
+$STACK(010,"ECODE")=
+$STACK(010,"PLACE")=DATA+4^PXVP201 +4
+$STACK(010,"MCODE")= F J=0:0 S J=$O(^AUTTIMM(J)) Q:J'>0  D
+$STACK(011)=DO
+$STACK(011,"ECODE")=
+$STACK(011,"PLACE")=DATA+5^PXVP201 +3
+$STACK(011,"MCODE")= . S DA=J,DIK="^AUTTIMM(" D ^DIK
+$STACK(012)=DO
+$STACK(012,"ECODE")=
+$STACK(012,"PLACE")=EN^DIK1 +2
+$STACK(012,"MCODE")=EN N DIC D DI
+$STACK(013)=DO
+$STACK(013,"ECODE")=
+$STACK(013,"PLACE")=DIN^DIK1 +5
+$STACK(013,"MCODE")=DIN S DV=0 F  S DV=$O(^UTILITY("DIK",DIKJ,DH,DV)) Q:DV=""  D
+ R:$G(DIKSET)!(DV-.01)
+$STACK(014)=DO
+$STACK(014,"ECODE")=
+$STACK(014,"PLACE")=XEC^DIK1 +3
+$STACK(014,"MCODE")=XEC S DW=$O(^UTILITY("DIK",DIKJ,DH,DV,DW)) Q:DW=""  D NXEC(^
+(DW)) S X=DIKS G XEC
+$STACK(015)=DO
+$STACK(015,"ECODE")=
+$STACK(015,"PLACE")=NXEC+4^DIK1 +1
+$STACK(015,"MCODE")= X DICODE
+$STACK(016)=XECUTE
+$STACK(016,"ECODE")=
+$STACK(016,"PLACE")=@ +1
+$STACK(016,"MCODE")=D KUPXREF^BIUTL5(X,"^AUTTIMM(")
+$STACK(017)=DO
+$STACK(017,"ECODE")=,M6,
+$STACK(017,"PLACE")=KUPXREF+13^BIUTL5 +1
+$STACK(017,"MCODE")= S @(BIGBL_"""""_Z_"""",$E($$UPPER(X),1,30),DA)")=""
+$STACK(018)=DO
+$STACK(018,"ECODE")=
+$STACK(018,"PLACE")=ERR+3^XPDIJ +1
+$STACK(018,"MCODE")= D ^%ZTER,BMES^XPDUTL(XPDERROR),EXIT^XPDID()
+```
+
+
