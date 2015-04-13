@@ -108,6 +108,11 @@ rather than my striving to be completely accurate, I will strive to be useful. I
 will show how M is written today rather than the various allowable permutations
 and what the M ISO/ANSI 95 standard explicitly allows or does not allow.
 
+I will be making frequent references to
+http://www.vistaexpertise.net/docs/pocket_guide.pdf. This is a pocket guide
+that can be perused to give you detailed information on a specific syntax. This
+is published by VISTA Expertise Network, my employer.
+
 ## Hello World 
 Let's look at a hello world example.
 
@@ -260,7 +265,7 @@ Command | Result | Explanation
 `write 0!0    `| 0 | Boolean OR
 `write 8]3    `| 1 | 8 follows 3
 `write "test"]3 `| 1 | test follows 3.
-`write "hello"["lo" |` | 1 | Does "hello" contain "lo"?
+`write "hello"["lo"` | 1 | Does "hello" contain "lo"?
 `write "2 terrace"]3 `| 0 | 2 terrace does not follow 3.
 `write 3?1N`   | 1 | Pattern Match. 3 is 1 number
 `write $piece("test1^test2","^",2) `| test2 | function is an expression
@@ -639,5 +644,158 @@ $STACK(018,"ECODE")=
 $STACK(018,"PLACE")=ERR+3^XPDIJ +1
 $STACK(018,"MCODE")= D ^%ZTER,BMES^XPDUTL(XPDERROR),EXIT^XPDID()
 ```
+## Example code so that we can dig in.
+--TODO--
 
+## Built-In Functions
+I call these built-in functions for ease of understanding compared with modern
+languages, but in the MUMPS Standard they are called "Instrinsic" functions. Any
+user defined functions (including those defined in libraries) are "Extrinsic"
+functions. Many programming languages do not provide a way for you to figure
+out what's built-in and what is definied explicitly by another programmer as
+a function, but in MUMPS, it's very simple. $FunctionName is a built-in
+function, and $$FunctionName^LibaryName is a user-defined function in
+a library. In this section, we will not discuss every single function, but we
+will cover the most important ones, and then give a listing of unimportant ones
+which can be perused at the reader's pleasure in the aforementioned MUMPS
+Handbook.
+
+There are a few functions we will dicuss later in their appropriate sections.
+E.g., $Data and $Order are best discussed in dealing with globals. We will
+start with the most important functions and work our way down.
+
+The examples below will only use the `write` command, which we covered above
+
+### $Piece, $P
+$Piece is proabably by far the most commonly used function in all of VISTA.
+This is because all of VISTA's data storage and API output returns data
+delimited by "^". In VISTA, almost always you see the "^" as the variable U.
+U is assigned first thing when you log-in, so it is guaranteed to be always
+available.
+
+Let's look at an example. The below is the first two data nodes for patient
+1 in a VISTA instance. ^DPT is the patient global, 1 is the record number, and
+each node stores data. Here there are two nodes. 
+
+```
+^DPT(1,0)="ZZ PATIENT,TEST ONE^F^2450124^^2^^NOE^^000003322^^LAS VEGAS^32^^^68^3060511^^^^1"
+^DPT(1,.11)="12 WAYLAND AVE^^^BROOKLYN^36^11234^70^^^^^11234^3050223.171822^VAMC^050^^14"
+```
+
+On the "0" node, we have the first "^" piece as the patient name, the second
+the patient sex, and the thrid the patient date of birth. I won't go into
+a tangent on the Fileman date format, but trust me, this is a date.
+
+To get the patient name, you can do this:
+
+```
+write $piece(^DPT(1,0),"^",1) ;ZZ PATIENT,TEST ONE
+```
+
+If you don't specify the piece number, it will default to 1. For example,
+
+```
+write $piece(^DPT(1,0),"^") ;ZZ PATIENT,TEST ONE
+```
+
+The patient's sex can be obtained by specifying the second piece:
+
+```
+write $piece(^DPT(1,0),"^",2) ; F
+```
+
+When in VISTA, you will typically see this (we will abbreviate write as W):
+
+```
+W $P(^DPT(1,0),U,2) ; F
+```
+
+In VISTA, almost always the commands are abbreviated. Which brings us to
+another unfortunate point for beginners in the language. All the commands in
+the code are abbreviated. It's a pretty difficult thing to get used it when
+starting, but eventually, eventually...
+
+One last thing regarding $Piece: in other programming languages, most often
+what you will see is an operation to break a string into an array, then a way
+to extract an element of an array. Cf. Javascript's `split` method.
+
+### $Length, $L
+$Length is pretty straight forward. Write $Length("test") will get you 4.
+However, the interesting thing about $Length is that it has a 2 argument form
+that actually changes its behavior. A 2 argument $Length counts the number of
+pieces in a string when broken by the delimiter in the second argument. So,
+
+```
+write $length("test^data^again","^") ; 3
+```
+
+This command you may surmise is useful in combination of $Piece and the For
+command. Knowing the number of pieces helps us know when to stop looping for
+pieces.
+
+### $Extract, $E
+$Extract gets you a part of the string you specify. In a lot of other
+languages, this function is called a substring. $Extract has three formats:
+One, two and three argument format. I will leave it for the examples to teach.
+
+```
+W $E("str") ; s
+W $E("str",1) ; s
+W $E("str",2) ; t
+W $E("str",1,2) ; st
+W $E("str",2,3) ; tr
+W $E("str",1,$L("str")) ; str
+W $E("str",1,$L("str")-1) ; st
+```
+
+### $Char ($C) and $ASCII ($A)
+
+I hope you are familiar with the ASCII table. If not, take a look at wikipedia.
+
+$Char is used to print non-visible characters from the ASCII table. For
+example, to issue a bell to the screen (something really annoying that VISTA
+does too many times... please don't do it), you write `W $C(7)`. The other
+common strings to write with $Char are the Line feed, carriage return
+combination, to create a new line: $C(13,10). You will notice that you can
+actually combine characters in $Char by using a comma. You can use (but there
+is no reason to) $Char to print out a visible character. E.g. $C(65) will print
+an uppercase "A".
+
+$ASCII flips this operation around. You tell it what printable character you
+want (or read in from the user), and you can print its ASCII numerical value.
+($Char accepts the numeric value and spits out the character to the screen).
+$ASCII can take one or two variables. See below for the examples.
+
+For example,
+
+```
+write $ascii("A") ; 65
+W $A(" ") ; 32 (space)
+W $A("ABCDE") ; 65, A
+W $A("ABCDE",5) ; 69, E, it is the fifth letter, and we asked for the fifth.
+```
+
+### $Translate
+
+### $Get
+
+### $Text
+
+### $Justify
+
+### $FNumber
+
+
+### $Random
+
+### $Name
+
+### More
+$FIND - Rarely used.
+$REVERSE - Rarely used.
+$Order
+$Data
+$Query
+$QuerySubscript
+$QueryLength
 
