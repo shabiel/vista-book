@@ -113,6 +113,19 @@ http://www.vistaexpertise.net/docs/pocket_guide.pdf. This is a pocket guide
 that can be perused to give you detailed information on a specific syntax. This
 is published by VISTA Expertise Network, my employer.
 
+## The Units of Execution
+Before getting into MUMPS, it worth noting some terminology.
+
+A program in MUMPS is called a routine. Better get used to it.
+
+A routine operates on data located in *global* variables. Global variables, are
+not, like in almost any other programming language I know, variables are are
+scoped to be shared by all execution units (routines); but rather, variables
+which are stored on disk. Variables that are not global variables are called
+local variables, and they exist for the duration of execution. Local variables
+may be shared across all execution units (routines), but they are still called
+local variables.
+
 ## Hello World 
 Let's look at a hello world example.
 
@@ -407,8 +420,26 @@ Yes. I know. Very odd.
 
 
 ## Variables
+Variables in MUMPS come in two varaities: Local and Global, before we get to
+them though, a word on the ^ character.
+
+### ^ (Caret, Up-Caret, Circumflex)
+Everytime I taught MUMPS, a big source of confusion for students is the "^"
+character, since it appears in so many contexts and has difference meanings in
+different places. I will try to clarify the different meanings so we won't get
+confused going forward.
+
+In variables, a local variable is not preceded by the ^, where as a global
+variable (a variable stored on disk) is. In any context where data is examined,
+read, or written, that is the meaning of the ^.
+
+In routine invocation and in routine examination statements, an ^ stands for
+a routine name. In any context where a routine is invoked, or examined, the
+^ stands for "what follows me is a routine name".
+
+### Local Variables
 A programming language will be pointless if we can't save values for further
-manipulation. Variables in M have the following format: a leading letter and
+manipulation. Local Variables in M have the following format: a leading letter and
 then any number of letters and/or numbers; or a leading % and any number of
 letters and/or numbers. For example:
 ```
@@ -775,7 +806,15 @@ W $A("ABCDE") ; 65, A
 W $A("ABCDE",5) ; 69, E, it is the fifth letter, and we asked for the fifth.
 ```
 
-### $Translate
+### $Translate, $TR
+$Translate changes some characters or deletes them. It is often used to format
+data from other sources coming into VISTA. It comes in a 2 argument and a three
+argument form.
+
+For example, if `^DPT(1,0)="ZZ PATIENT,TEST ONE^F^2450124^`, then
+```
+W $TR(^DPT(1,0),
+
 
 ### $Get
 
