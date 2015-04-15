@@ -214,9 +214,10 @@ circumference ; calculate the circumference of a circle ; label line
  ; level line
  ;
  write "Sorry. No entry from the top is allowed.",! ; level line
+ quit
  ;
 main ; Main entry point
- read x,"type enter to begin: ",!
+ read "type enter to begin: ",x,!
  write !!
  read "Enter a radius: ",rad,!
  write !!
