@@ -10,11 +10,11 @@ purposely designed to replace assembly language for medical use. Neil
 Pappalordo went on to start Meditech, still one of the largest electronic medical 
 records software vendors.
 
-The language was standardized by ANSI and ISO in 1977. Due to this, its
-medical background, and its suitability for representing multifaceted medical data,
-it remains a very common language in medical informatics. Much of how it ended up 
-that way is due to various pioneers, notably Ted O'Neil,
-who envisioned the application of computing to medicine.
+The language was standardized by ANSI and ISO in 1977. Due to this, its medical
+background, and its suitability for representing multifaceted medical data, it
+remains a very common language in medical informatics. Much of how it ended up
+that way is due to various pioneers, notably Ted O'Neil, who envisioned the
+application of computing to medicine.
 
 MUMPS is the programming language behind Meditech, VISTA, RPMS (a cousin
 of VISTA), and notably, the most successful EMR in the world, Epic. Cerner, the
@@ -205,8 +205,6 @@ a function invocation takes place. Once the procedure or function is done, the
 stack is decremented back again. 
 
 ### Example Program
-
-// TODO: Make sure to run this and make sure it works.
 
 All right. We need to tie all of these concepts together.
 ```
@@ -438,6 +436,36 @@ In routine invocation and in routine examination statements, an ^ stands for
 a routine name. In any context where a routine is invoked, or examined, the
 ^ stands for "what follows me is a routine name".
 
+How do we know which is which? It depends on the command that preceed the
+expression. If the command is `DO` or `GOTO`, the argument that contains the
+^ is a routine reference; the `$TEXT` function takes a routine reference as
+well. In ALL other contexts, the ^ means that it's a global variable.
+
+Here are a few examples.
+
+In the examples below, the colon (:) is a post conditional. It is similar to
+Python and Ruby statements that do something similar. E.g., in Python, this is
+valid code: `x if C else y`. This can get even fancier in Python. In MUMPS,
+do:^item1 ^item2 means that if ^item1 (as a variable) is true, run ^item2.
+A more obtuse post conditional, which I informally like to call the "post-post"
+coditional, is when the condition postcedes the variable. See the goto example
+below.
+
+```
+do ^item ; routine
+do:^item1 ^item2 ; ; item1 is a global; item2 is a routine
+goto ^item2:^item1 ; item2 is a routine, item1 is a global.
+write ^item1 ; item1 is a global
+write:^item1 ^item2 ; both item1 and item2 are globals
+if ^item1  ; ^item1 is a global
+write $text(^item1) ; ^item1 is a routine
+write $extract(^item1) ; ^item1 is a routine
+```
+
+So let's summarized this for carets in front of an identifier: Arguments of
+`DO` and `GOTO` are routines; parameters to the function $TEXT are also
+routines. Everything else is a global.
+
 ### Local Variables
 A programming language will be pointless if we can't save values for further
 manipulation. Local Variables in M have the following format: a leading letter and
@@ -463,6 +491,83 @@ Newing a variable that already exists "shadows" the existing variable, meaning
 that its value is saved until you get out of the stack level that you newed.
 Examples of this will be shown in the below section
 
+### Global Variables
+In pretty much every other programming language I know, global variables are
+those whose scope encompasses the whole operating systme thread. When I learned
+MUMPS, trying to fit that definition into what MUMPS called "globals" was a bit
+difficult for me. Globals in MUMPS are really very simple: They are the files
+on the disk. When you set a global using a set statement (just like the local
+variables), the MUMPS Virtual Machine writes that to disk. Local variables only
+exist in the memory of the system in that process's address space. When the
+process goes away, and then you start another MUMPS process, you won't find
+local variables but you will find the global variables on disk. A simple
+example: `set ^x=55`.
+
+### Variable Trees (commonly known as arrays)
+I would try very hard to not call these arrays, because they have absolutely
+nothing in common with any other arrays I know of in other languages; but that
+name has stuck.
+
+In MUMPS, an array is really a tree structure of branches at which the tips
+(nodes) have values which get stored in memory (locals) or on disk (globals).
+I really can't explain it without an example (we are going British with the
+name components here):
+
+```
+ ^persons(1,"name")="Habiel,Samuel"
+ ^persons(1,"name","components","surname")="Habiel"
+ ^persons(1,"name","components","given")="Samuel"
+ ^persons(1,"address","street1")="123 Bunny Lane"
+ ^persons(1,"address","city")="Seattle"
+ ^persons(1,"address","postalCode")="12345"
+ ^persons(1,"address","country")="US"
+
+ ^persons(2,"name")="Granger,Hermione"
+ ^persons(2,"ethnicity")="Caucasion"
+ ^persons(2,"address","street1")="123 Hogwarts Street"
+ ^persons(2,"address","street2")="Griffindor House"
+ ^persons(2,"address","street3")="Flat No 88"
+ ^persons(2,"address","city")="Hogwarts Castles"
+ ^persons(2,"address","postalCode")="A1E K2N"
+ ^persons(2,"address","country")="GB"
+
+ ^persons(3,"...
+
+ ^persons("NameIndex","HABIEL,SAMUEL",1)=""
+ ^persons("NameIndex","GRANGER,HERMIONE",2)=""
+ ^persons("NameIndex",...
+
+ ^persons("EthnicityIndex","CAUCASION",2)=""
+ ...
+```
+
+The first thing that will jump at you (it certainly did for me when I first saw
+this) is that these are not arrays. Arrays have elements that are addressable
+by numbers, arrays are splitable, and arrays have a finite length. None of this
+is true here. Instead, we something that resembles a key-value store, but it
+looks like that there are multiple keys. And strangely, keys do not have to be
+present in difference records.
+
+The last point is the most important to the existence of MUMPS in medicine.
+Such arrays (alas we have to use the name now) are called sparse arrays. The
+most advanced technologies of the data in data storage, even early relational
+databases, stored data in fixed length records. You were expected to have an
+entry for each item in the record; if it is empty, you still have to keep
+a space where the record should be. In MUMPS, that is not the case. You can
+have as little or as much of the data as you like; and you won't consume any
+storage for data that you do not have. This in a nutshell is what MUMPS
+succeeded in medicine. Patient data is very sparse and multidimentinal. We
+mentioned in the introduction the problem of having to store multiple vitals
+for patients when vitals can be performed in a combination of different
+attributes (supine/upright, left/right, brachial/radial, resting/exercise), and
+where most patients will not have the same combination of attributes. Storing
+this in a flat file system will be rather expensive. Remember, that was the
+1970's and 80's. Today... well, let's just say we have Blu-ray movies, each one
+clocks at about 50GB.
+
+So enough of why and whence. Let's examine the structure of the globals above.
+--TODO: CONTINUE--
+
 ## Stack
 MUMPS implements a virtual stack... Never mind the virtual; just a stack.
 The stack levels are numbered, and they start at 0. The stack gets incremented
@@ -481,11 +586,12 @@ itself considered a stack item.
 ```
 circumference ; calculate the circumference of a circle 
  ; 
- write "Sorry. No entry from the top is allowed.",! 
+ write "Sorry. No entry from the top is allowed.",!
+ quit
  ;
 main ; Main entry point
  ; *Stack Level 0*
- read x,"type enter to begin: ",!
+ read "type enter to begin: ",x,!
  write !!
  new circ set circ=0
  read "Enter a radius: ",rad,!
