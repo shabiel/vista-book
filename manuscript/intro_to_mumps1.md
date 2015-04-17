@@ -38,7 +38,6 @@ remove the history of how its early code used to look.
 MUMPS is very common in medicine; and also used (to a lesser extent) in banking.
 We will focus here on its history with medicine.
 
-### Why the M integrated database?
 In the 1960s and 1970s, there were essentially two
 models of databases. Fixed record databases and sparsely stored databases. The
 relational model matured around the beginning of the 80s, and by that time M was
@@ -102,8 +101,8 @@ These were the major platforms on which M ran for VISTA and RPMS. Intersystems,
 in an effort to consolidate the market, bought both DSM and MSM in the late
 1990's. 
 
-# The M Language
-We will start our abbreviated discussion of the M language here. Please note that
+# The MUMPS Language
+We will start our abbreviated discussion of the MUMPS language here. Please note that
 rather than my striving to be completely accurate, I will strive to be useful. I
 will show how M is written today rather than the various allowable permutations
 and what the M ISO/ANSI 95 standard explicitly allows or does not allow.
@@ -157,34 +156,34 @@ Arguments to a single command can be combined together by using a comma.
 This is actually the format we see in our example.
 
 One puzzling (but hard to notice) item is that "helloworld" and "main" are
-flushed to the left, it is not a command, and every line under it contains
+flush to the left, they are not a command, and every line under them contains
 a space at the beginning.  These items are all significant.
 
 ### Line Labels
-Any identifier flushed to the left is called a line label. Essentially, like in
-other languages, it is a label which could be a goto target. Except in MUMPS, it is
+Any identifier flush to the left is called a line label. Essentially, like in
+other languages, it is a label that could be a goto target. Except in MUMPS, it is
 both a procedure/function target and a goto command target. Thus you can write
 `do main^helloworld` and `goto main^helloworld`. A line label can be followed by M
 commands or a comment using a ';'.
 
 ### Level Line (really just the M code)
-Any line with at least one space or at least one tab at the beginning of the
+Any line with at least one space or one tab at the beginning of the
 line is considered a code line. That space or tab can follow a label or
-a formal list. That contains code to be executed. If the code is placed without
+a formal list. A level line contains code to be executed. If the code is placed without
 a space/tab at the front, the first word in the code will be considered a line
 label, and the next argument won't be a command, and thus the interpreter will
 complain about a syntax error.
 
 ### Formal Lines with a Formal List
-In the M 1990 standard, M finally gained the ability to accept parameters to a
-procedure or function. So rather then `main`, you can write `main(arg)`, and invoke
-it with `do main^helloworld(1)`, where 1 is the arg. This line is known as a formal
+In the 1990 MUMPS standard, MUMPS finally gained the ability to accept parameters when a
+procedure or function is called. So, rather then `main`, you can write `main(arg)`, and invoke
+it with `do main^helloworld(1)`, where 1 is the parameter. This line is known as a formal
 line and the parameters are known as a formal list.
 
-### Allowable formats for labels
-Labels may begin with a % and a number of letters and numbers, a first letter
-then any number of letters and numbers; or just a number with no following
-letters. E.g.
+### Allowable Formats for Labels
+Labels may begin with a % and a combination of letters and numbers, a first letter
+then a combination of letters and numbers, or just a number with no following
+letters. For example:
 ```
 %test ; okay
 test  ; okay
@@ -193,8 +192,7 @@ test1 ; okay
 1     ; okay
 test% ; invalid
 ```
-In the current Standards and Conventions (https://www.voa.va.gov/DocumentView.aspx?DocumentID=182), the maximum allowable length of a label is 8 characters that must be in
-uppercase. GT.M and Cache allow a maximum lengh of 32 characters. There is no
+In the current Standards and Conventions (https://www.voa.va.gov/DocumentView.aspx?DocumentID=182), the maximum allowable length of a label is 8 uppercase characters. GT.M and Cache allow a maximum lengh of 32 characters. There is no
 syntax error if you exceed this, but any characters following the 32 will not
 be used to distinguish between labels.
 
@@ -205,7 +203,6 @@ a function invocation takes place. Once the procedure or function is done, the
 stack is decremented back again. 
 
 ### Example Program
-
 All right. We need to tie all of these concepts together.
 ```
 circumference ; calculate the circumference of a circle ; label line
@@ -230,11 +227,14 @@ calculate(radius) ; formal line. Formal list contains one variable
  ;
 ```
 
-## M Language Expressions
+## MUMPS Expressions
+From the 1995 MUMPS Standard: 
+The expression, expr , is the syntactic element which denotes the execution of a value-producing
+calculation. Expressions are made up of expression atoms separated by binary, string, arithmetic, or truthvalued
+operators.
+expr ::= expratom [ exprtail ] ...
 
-//TODO: Find the definition in the M standard, and give a simple definition.
-
-An expression is argument to commands that evaluate text rather than act on
+An expression is an argument to commands that evaluate text rather than act on
 other types. For example, in
 
 ```
@@ -287,7 +287,7 @@ A few of these operators need explanation.
 
 Mathematical operators (`*`, `/`, etc.) are all straightforward.
 
-However, you will notice that the `'`, `>`, `<` etc returns 1 or 0. This will
+However, you will notice that the `'`, `>`, `<` etc. returns 1 or 0. This will
 eventually bring us to the typing system of the language, but for now, any
 operator that creates a boolean (true or false) returns 1 or 0.
 
@@ -297,8 +297,8 @@ Here are all the boolean operators:
 = '= ' > '> < '< >= <= ] [ & !
 ```
 
-Note that M does not have an XOR operator, nor any bitwise operators. All
-M implementations provide custom functions to carry such an operation out; but
+Note that MUMPS does not have an XOR operator, nor any bitwise operators. All
+MUMPS implementations provide custom functions to carry such an operation out; but
 a strictly string storage language, MUMPS almost 99% of the time never needs
 them.
 
@@ -319,14 +319,14 @@ indicate clearly what I meant, so that future programmers maintaining my code
 will be able to read this. For example, `3+(4*2)` gets you the correct result
 of 11.
 
-In VISTA and RPMS, there are a few confusing idioms. I will state them here.
+In VISTA and RPMS, there are a few confusing idioms.
 
-`]` is never used except in comparing agains empty strings, which is the
+`]` is never used except in comparing against empty strings, which is the
 expression `""`. For example, `"test"]""` means `test'=""`. Essentially it's
 not equal. This is frequently used to see if a variable contains an empty
 string.
 
-`+"6^8^2"` returns 6. Data in Fileman, especially values returned by the ^DIC
+`+"6^8^2"` returns 6. MUMPS forces a numerical value from a text value when it can in this situation. Data in Fileman, especially values returned by the ^DIC
 API, frequently begin with a number. ^DIC for example may return "3^JOHN
 SMITH". Programmers almost always are interested in just the 3. An easy way to
 obtain that, rather than using the $piece function (shown in an example above),
@@ -334,7 +334,7 @@ is just to + the expression to get the number.
 
 Because Standard MUMPS does not allow >= and <=, '< and '> are used instead.
 
-## The MUMPS typing system
+## The MUMPS Typing System
 In a programming language, a typing system deals with how data is manipulated
 in a program. In MUMPS, for storage on disk, there is only a single type:
 string. All data is stored as strings on disk. However, once the data is
@@ -344,19 +344,18 @@ performed on it. For example, if the variable `x` contains 3 and the variable
 treats the operands as numbers, and 'x or 'y converts the string into
 a boolean. We have already seen above that certain operators (such as > or =)
 have an output of boolean. Boolean in MUMPS is not "true" or "false", but 1 or
-0. In terms of other programming languages, MUMPS is weakly typed (values do
-values do not retain their type between operations) and dynamically typed
+0. In terms of other programming languages, MUMPS is weakly typed (values do not retain their type between operations) and dynamically typed
 (values can be dynamically changed into other types).
 
 Of note, if you haven't noticed it already, strings in MUMPS have to start and
 end with a double quote ("). Single quotes, unlike in many other languages
 today, cannot be used. The single quote as you saw above is used for negation.
 
-### Canonical forms of data types and resulting comparisons
+### Canonical Forms of Data Types and Resulting Comparisons
 A string is a string. There is no "canonical form".
 
 Numbers have a canonical form; and it is very important to have a good
-understanind of this: Any preceeding zeros before the decimal point, if there
+understanding of this: Any preceeding zeros before the decimal point, if there
 are no other numbers before the decimal point, are stripped; any zeros trailing
 the significant figures after a decimal also get stripped.
 
@@ -372,22 +371,22 @@ write 0.5         ; .5
 The last one (0.5 becoming .5) turns out to be actually a major problem in
 medicine. Fractional numbers without a leading zero are a major cause of
 medical errors. You as a programmer must attend to formatting this correctly.
-You can format it correctly but appending a zero to the front using the
+You can format it correctly by appending a zero to the front using the
 concatenation operator. $Justify and $FNumber are both helpful in that regard
 as well. We will discuss these later.
 
-If you inter-op from other programming languages such as Python and Javascript,
+If you interoperate from other programming languages such as Python and Javascript,
 you also must attend to this conversion. Most languages today represent the
 canonical form of a fraction with a leading zero.
 
-Booleans, as we say before, are plain 1 and 0 for true and false.
+Booleans, as we said before, are plain 1 and 0 for true and false.
 
-### Data type conversion
+### Data Type Conversion
 Conceptually, there is a heirarchy of data type conversions. The highest type
 is a String; and the lowest is Boolean. It's helpful to think of conversions
 going to String -> Number -> Boolean.
 
-#### String to Numbers
+#### String to Number
 To convert a string to a number, use `+`.
 
 ```
@@ -403,11 +402,13 @@ write '5 ; 0
 write '0 ; 1
 write ''5 ; 1
 ```
-The collarally is that you can convert strings to numbers to booleans.
+The corollary is that you can convert strings to numbers to booleans.
 ```
 write '"23 Sanders Lane" ; 0
 write '"hello" ; 1
 ```
+The first example results in false since numbers return a true Boolean value and we've put "'" for "not" in the expression. The
+second example results in true since text strings return a Boolean value of false.
 
 #### Going the other way
 Any of the operators expecting strings will take the values of the other
@@ -419,16 +420,16 @@ Yes. I know. Very odd.
 
 
 ## Variables
-Variables in MUMPS come in two varaities: Local and Global, before we get to
+Variables in MUMPS come in two variaties: Local and Global, before we get to
 them though, a word on the ^ character.
 
 ### ^ (Caret, Up-Caret, Circumflex)
-Everytime I taught MUMPS, a big source of confusion for students is the "^"
-character, since it appears in so many contexts and has difference meanings in
+Everytime I've taught MUMPS, a big source of confusion for students is the "^"
+character, since it appears in so many contexts and has different meanings in
 different places. I will try to clarify the different meanings so we won't get
 confused going forward.
 
-In variables, a local variable is not preceded by the ^, where as a global
+In variables, a local variable is not preceded by the ^, whereas a global
 variable (a variable stored on disk) is. In any context where data is examined,
 read, or written, that is the meaning of the ^.
 
@@ -436,7 +437,7 @@ In routine invocation and in routine examination statements, an ^ stands for
 a routine name. In any context where a routine is invoked, or examined, the
 ^ stands for "what follows me is a routine name".
 
-How do we know which is which? It depends on the command that preceed the
+How do we know which is which? It depends on the command that preceeds the
 expression. If the command is `DO` or `GOTO`, the argument that contains the
 ^ is a routine reference; the `$TEXT` function takes a routine reference as
 well. In ALL other contexts, the ^ means that it's a global variable.
@@ -448,7 +449,7 @@ Python and Ruby statements that do something similar. E.g., in Python, this is
 valid code: `x if C else y`. This can get even fancier in Python. In MUMPS,
 do:^item1 ^item2 means that if ^item1 (as a variable) is true, run ^item2.
 A more obtuse post conditional, which I informally like to call the "post-post"
-coditional, is when the condition postcedes the variable. See the goto example
+conditional, is when the condition postcedes the variable. See the goto example
 below.
 
 ```
@@ -459,16 +460,16 @@ write ^item1 ; item1 is a global
 write:^item1 ^item2 ; both item1 and item2 are globals
 if ^item1  ; ^item1 is a global
 write $text(^item1) ; ^item1 is a routine
-write $extract(^item1) ; ^item1 is a routine
+write $extract(^item1) ; ^item1 is a global
 ```
 
-So let's summarized this for carets in front of an identifier: Arguments of
+So let's summarize this, for carets in front of an identifier: Arguments of
 `DO` and `GOTO` are routines; parameters to the function $TEXT are also
 routines. Everything else is a global.
 
 ### Local Variables
 A programming language will be pointless if we can't save values for further
-manipulation. Local Variables in M have the following format: a leading letter and
+manipulation. Local Variables in MUMPS have the following format: a leading letter and
 then any number of letters and/or numbers; or a leading % and any number of
 letters and/or numbers. For example:
 ```
@@ -480,7 +481,7 @@ test  ; valid
 The current VISTA Standards and Conventions allow a variable to be in any case
 and have a maximum length of 16 characters. GT.M and Cache allow a length of
 32 characters. Exceeding this does not result in a syntax error, but any
-characters following the 32 will not be used to distinguish between variables.
+characters following the 32nd will not be used to distinguish between variables.
 
 Variables are assigned values using the set command. E.g. `set x=55` or `set
 x="hello"`. Unlike other languages, the set command is required to precede
@@ -493,7 +494,7 @@ Examples of this will be shown in the below section
 
 ### Global Variables
 In pretty much every other programming language I know, global variables are
-those whose scope encompasses the whole operating systme thread. When I learned
+those whose scope encompasses the whole operating system thread. When I learned
 MUMPS, trying to fit that definition into what MUMPS called "globals" was a bit
 difficult for me. Globals in MUMPS are really very simple: They are the files
 on the disk. When you set a global using a set statement (just like the local
@@ -544,9 +545,9 @@ name components here):
 The first thing that will jump at you (it certainly did for me when I first saw
 this) is that these are not arrays. Arrays have elements that are addressable
 by numbers, arrays are splitable, and arrays have a finite length. None of this
-is true here. Instead, we something that resembles a key-value store, but it
-looks like that there are multiple keys. And strangely, keys do not have to be
-present in difference records.
+is true here. Instead, we have something that resembles a key-value store, but it
+looks like there are multiple keys. And strangely, not all keys have to be
+present in all records.
 
 The last point is the most important to the existence of MUMPS in medicine.
 Such arrays (alas we have to use the name now) are called sparse arrays. The
@@ -555,8 +556,8 @@ databases, stored data in fixed length records. You were expected to have an
 entry for each item in the record; if it is empty, you still have to keep
 a space where the record should be. In MUMPS, that is not the case. You can
 have as little or as much of the data as you like; and you won't consume any
-storage for data that you do not have. This in a nutshell is what MUMPS
-succeeded in medicine. Patient data is very sparse and multidimentinal. We
+storage for data that you do not have. This in a nutshell is why MUMPS
+succeeded in medicine. Patient data is very sparse and multi-dimensional. We
 mentioned in the introduction the problem of having to store multiple vitals
 for patients when vitals can be performed in a combination of different
 attributes (supine/upright, left/right, brachial/radial, resting/exercise), and
@@ -568,7 +569,7 @@ clocks at about 50GB.
 So enough of why and whence. Let's examine the structure of the globals above.
 --TODO: CONTINUE--
 
-## Stack
+## The Stack
 MUMPS implements a virtual stack... Never mind the virtual; just a stack.
 The stack levels are numbered, and they start at 0. The stack gets incremented
 by calling a new block of code using `DO`, running a user created function
