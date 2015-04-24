@@ -16,7 +16,7 @@ See below for the linter routine.
  * >> https://bitbucket.org/dlw/axiom
  * VPE: https://github.com/shabiel/random-vista-utilities/raw/master/VPE-1.0-1.KID
  * Extensible Editor: Install these:
- * > https://github.com/mdgeek/VistA-RG-Utilities/blob/master/kid/rgut-3.0.kid
+ * > https://github.com/mdgeek/VistA-RG-Utilities/raw/master/kid/rgut-3.0.kid
  * > https://github.com/mdgeek/VistA-Extensible-Editor/raw/master/kid/rged-3.0.kid
  * Eclipse: Follow these instructions: https://github.com/shabiel/M-Tools-Project
 
