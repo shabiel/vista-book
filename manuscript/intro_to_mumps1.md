@@ -159,6 +159,10 @@ One puzzling (but hard to notice) item is that "helloworld" and "main" are
 flush to the left, they are not a command, and every line under them contains
 a space at the beginning.  These items are all significant.
 
+I know I will forget to mention this; I just remembered while writing another
+section: Case sensitivity: Any M expression is not case sensitive; however, any
+elements entered by the user (e.g. labels, variable names) are case sensitive.
+
 ### Line Labels
 Any identifier flush to the left is called a line label. Essentially, like in
 other languages, it is a label that could be a goto target. Except in MUMPS, it is
@@ -361,7 +365,7 @@ the significant figures after a decimal also get stripped.
 
 ```
 write 3.200000 ; 3.2
-write 3.200000*4 ; 12.8
+write 3.200000\*4 ; 12.8
 write 00000000003 ; 3
 write "3.000"="3" ; 0 ; comparison false as strings
 write 3.000=3     ; 1
@@ -414,7 +418,7 @@ second example results in true since text strings return a Boolean value of fals
 Any of the operators expecting strings will take the values of the other
 functions and treat them as strings. For example:
 ```
-write +"23 Sanders Lane"_''5 ; 231
+write +"23 Sanders Lane"\_''5 ; 231
 ```
 Yes. I know. Very odd.
 
@@ -598,7 +602,7 @@ main ; Main entry point
  read "Enter a radius: ",rad,!
  write !!
  set circumference=$$calculate(rad)
- write "circumference is "_circumference,!
+ write "circumference is "\_circumference,!
  quit
  ;
 calculate(radius) ;
@@ -607,7 +611,7 @@ calculate(radius) ;
           ; newed here. It "shadows" the original variable, so you do not have
           ; access to the original variable until you exit out of this stack
           ; level.
- set circ=2*3.14*radius ; 2 pi r
+ set circ=2\*3.14\*radius ; 2 pi r
  quit circ
  ;
 ```
@@ -615,7 +619,7 @@ calculate(radius) ;
 This is an example of a KIDS installation gone bad. We check the error trap.
 
 ```
-PACKAGE: PX*1.0*201     Feb 01, 2015 11:19 am                         PAGE 1
+PACKAGE: PX\*1.0\*201     Feb 01, 2015 11:19 am                         PAGE 1
                                              COMPLETED           ELAPSED
 -------------------------------------------------------------------------------
 STATUS: Start of Install                  DATE LOADED: FEB 01, 2015@10:55:12
@@ -653,7 +657,7 @@ XPI1   Want KIDS to INHIBIT LOGONs during the install                 NO
 XPZ1   Want to DISABLE Scheduled Options, Menu Options, and Protocols NO
 MESSAGES:
 
- Install Started for PX*1.0*201 :
+ Install Started for PX\*1.0\*201 :
                Feb 01, 2015@10:56:38
 
 Build Distribution Date: Nov 04, 2014
@@ -676,7 +680,7 @@ Build Distribution Date: Nov 04, 2014
 
  Running Post-Install Routine: POST^PXVP201
 
-<UNDEFINED>KUPXREF+13^BIUTL5 *Z
+<UNDEFINED>KUPXREF+13^BIUTL5 \*Z
 ```
 
 To display the error trap in VISTA after a crash, run `DO ^XTER`. Look at the
@@ -691,9 +695,9 @@ UCI/VOL: [ROU:CACHEINV]
 $ZA:   0                                $ZB: \013
 Current $IO: /dev/pts/3                 Current $ZIO: #.#.#.#^43^19^/dev/
 pts/3
-$ZE= <UNDEFINED>KUPXREF+13^BIUTL5 *Z
+$ZE= <UNDEFINED>KUPXREF+13^BIUTL5 \*Z
 Last Global Ref: ^UTILITY("DIK",6915,9999999.14,.02,3)
- S @(BIGBL_"""""_Z_"""",$E($$UPPER(X),1,30),DA)")=""
+ S @(BIGBL\_"""""\_Z\_"""",$E($$UPPER(X),1,30),DA)")=""
 $DEVICE=
 $ECODE=,M6,
 $ESTACK=17
@@ -777,7 +781,7 @@ $STACK(016,"MCODE")=D KUPXREF^BIUTL5(X,"^AUTTIMM(")
 $STACK(017)=DO
 $STACK(017,"ECODE")=,M6,
 $STACK(017,"PLACE")=KUPXREF+13^BIUTL5 +1
-$STACK(017,"MCODE")= S @(BIGBL_"""""_Z_"""",$E($$UPPER(X),1,30),DA)")=""
+$STACK(017,"MCODE")= S @(BIGBL\_"""""\_Z\_"""",$E($$UPPER(X),1,30),DA)")=""
 $STACK(018)=DO
 $STACK(018,"ECODE")=
 $STACK(018,"PLACE")=ERR+3^XPDIJ +1
@@ -803,9 +807,14 @@ There are a few functions we will dicuss later in their appropriate sections.
 E.g., $Data and $Order are best discussed in dealing with globals. We will
 start with the most important functions and work our way down.
 
-The examples below will only use the `write` command, which we covered above
+The examples below will only use the `write` command, which we covered above.
 
-### $Piece, $P
+I will place parentheses after each function to make sure that it is understood
+as a function in its short hand form. For example, $P is $Piece when it has
+arguments, but is $Principal (a special variable) without arguments. This is
+another big source of confustion for beginners.
+
+### $Piece(), $P()
 $Piece is proabably by far the most commonly used function in all of VISTA.
 This is because all of VISTA's data storage and API output returns data
 delimited by "^". In VISTA, almost always you see the "^" as the variable U.
@@ -858,7 +867,7 @@ One last thing regarding $Piece: in other programming languages, most often
 what you will see is an operation to break a string into an array, then a way
 to extract an element of an array. Cf. Javascript's `split` method.
 
-### $Length, $L
+### $Length(), $L()
 $Length is pretty straight forward. Write $Length("test") will get you 4.
 However, the interesting thing about $Length is that it has a 2 argument form
 that actually changes its behavior. A 2 argument $Length counts the number of
@@ -872,7 +881,7 @@ This command you may surmise is useful in combination of $Piece and the For
 command. Knowing the number of pieces helps us know when to stop looping for
 pieces.
 
-### $Extract, $E
+### $Extract(), $E()
 $Extract gets you a part of the string you specify. In a lot of other
 languages, this function is called a substring. $Extract has three formats:
 One, two and three argument format. I will leave it for the examples to teach.
@@ -887,7 +896,7 @@ W $E("str",1,$L("str")) ; str
 W $E("str",1,$L("str")-1) ; st
 ```
 
-### $Char ($C) and $ASCII ($A)
+### $Char() ($C()) and $ASCII() ($A())
 
 I hope you are familiar with the ASCII table. If not, take a look at wikipedia.
 
@@ -917,32 +926,167 @@ W $A("ABCDE",5) ; 69, E, it is the fifth letter, and we asked for the fifth.
 ### $Translate, $TR
 $Translate changes some characters or deletes them. It is often used to format
 data from other sources coming into VISTA. It comes in a 2 argument and a three
-argument form.
+argument form. The three argument form replaces a character with another; and
+the two argument form deletes the second argument from the string supplied as
+the first argument.
 
 For example, if `^DPT(1,0)="ZZ PATIENT,TEST ONE^F^2450124^`, then
 ```
-W $TR(^DPT(1,0),
+W $TR(^DPT(1,0),"^"," "), will give you "ZZ PATIENT TEST ONE F 2450124 "
 
+W $TR(^DPT(1,0),"^"), will give you "ZZ PATIENT,TEST ONEF2450124"
+```
 
-### $Get
+Note that $Trasnlate does not perform a search and replace operation. It only
+substitutes specific characters. There is no instrinsic function in MUMPS to do
+search and replace; instead use `$$REPLACE^XLFSTR`.
 
-### $Text
+I personally used `$$REPLACE^XLFSTR` as a `printf` emulator.
 
-### $Justify
+### $Get(), $G()
+In M, it is frequently the case that you check variables that are not defined,
+whether local variables or global variables. A couple of common use cases is
+when you check for a configuration file and find none; or if your
+function/label accepts some parameters that don't necessarily need to be
+defined by the caller.
 
-### $FNumber
+```
+$G(^Global(doesnt,exist)) ; single argument form = "" (empty string)
+$G(varDoesntExist,1) ; 2 argument form = 1. Second argument is default
+if the first argument is unvalued. This is used frequently in functions that
+need to check if a parameter was passed; and if not, supply a default value.
+```
 
+So far so good. Unfortuately, the creative VISTA programmers have come up with
+idioms that are not clear even to experienced programmers.
 
-### $Random
+```
+if $get(variable) ; the variable is ASSUMED to be numeric; so this checks to
+see if a numeric variable was defined.
 
-### $Name
+if '$get(variable) ; If the variable isn't defined, and ASSUMED to be numeric,
+then the condition is true if the variable is actually defined.
+
+if +$get(variable) ; Check to see if the argument is numeric. The programming
+here is superflous since $get(variable) by itself will supply the necessary
+truth condition by being converted from a string to a number to a boolean.
+
+if '+$get(variable) ; you figure this one out.
+
+if $get(variable)="" ; variable is not defined.
+```
+
+Inexpreienced M programmers may use the `if +$get` formulation; the + is not
+necessary as explained above.
+
+Time for the $Get warning. $Get on a variable that is already defined to be an
+empty string will also return the empty string. If you use the two parameter
+form, and expect the second parameter to be returned, and the first parameter
+is a variable defined to be an empty string, an empty string will be returned,
+which is almost always not the result that you want. It is VERY IMPORTANT that
+you are aware of the semantics of empty strings with $Get.
+
+### $Text(), $T()
+$Text gets you a specifc line from a routine. While that may seem useful only
+for debugging and code introspection; there is a long tradition of storing
+simple data or maps inside of routines; these are read with $Text. In addition,
+some programmers (including myself) use $Text(+0), which gets you the routine
+name that is currently running, to use as a subscript in the temporary global
+arrays used in VISTA.
+
+Let's say our sample routine looks like this:
+```
+KBANDEMO ; VEN/SMH - Demo
+ ;;VERSION;PACKAGE
+LABEL ; 
+ WRITE "HELLO $TEXT()"
+DATA ; 
+ ;;TEST1
+ ;;TEST2
+ ;;<END>
+```
+
+threfore,
+
+```
+$Text(+1^routineName) ; KBANDEMO; VEN/SMH - Demo
+$Text(+2^routineName) ;  ;;VERSION;PACKAGE
+$Text(+3^routineName) ; LABEL ;
+$Text(+4^routineName) ;  WRITE "HELLO $TEXT()"
+$Text(LABEL^routineName) ; LABEL ; 
+$Text(LABEL+1^routineName) ; WRITE "HELLO $TEXT()"
+$Text(+0) ; RoutineName
+$Text(LABEL) ; LABEL ; only works when you are INSIDE the current routine
+
+; Loop through the DATA table ine the routine, print each line, and quit when
+; you reach <END>
+for i=1:1 set x=$Text(i+Data) quit:i["<END>"  write x,!
+
+### $Justify(), $J()
+I don't use this often enough to remember the syntax. It's a text formatting
+function; go look it up in the refence above.
+
+### $FNumber(), $FN()
+Ditto for numbers. Look in the reference.
+
+### $Random(), $R()
+$Random returns a pseudo-random number. Look in the reference.
+
+### $FIND(), $F()
+I have only seen this once in all my career with VISTA in PSSDSAPI. All I could
+say is dumb programmer. You should always use $Piece and $Length to achieve the
+same result. $FIND has very weird semantics that make it very difficult to use,
+which makes it partly useful. The way it is designed to work is in data that is
+not delimited. Again, look in the reference.
+
+### $REVERSE(), $RE()
+Reverses a string. $RE("string") becomes "gnirts". Almost useless; however, it is
+useful if you want to be clever with your pieces. Witness...
+
+```
+set a="a^b^c^d"
+set u="^"
+write $p(a,u) ; a
+write $p(a,u,4) ; d
+write $p(a,u,$l(a,u)) ; d
+write $re($p($re(a),u)) ; d
+```
+
+I am ashamed to say that I used the last format somewhere in the code that
+I have written. 
+
+### $Name()
+
+### $Data()
+
+### $Order()
 
 ### More
-$FIND - Rarely used.
-$REVERSE - Rarely used.
 $Order
 $Data
 $Query
 $QuerySubscript
 $QueryLength
 
+## Unconfustion table: Functions and Special Variables that share the same name
+NB: This table included non-standard function or variables. They will be marked
+as "ns". Using these is illegal in VISTA, but the author really wants them!!!
+
+| Intrinsic Function Name | Instrinsic Variable Name |
+| ======================  | ======================== |
+| $P() = $Piece           | $P = $Principal          |
+| $T() = $Text            | $T = $Test               |
+| $J() = $Justify         | $J = $Job                |
+| $R() = $Random          | $R = $Reference (ns)     |
+| $D() = $Data            | $D = $Device             |
+| $I() = $Increment (ns)  | $I = $IO                 |
+
+# Commands
+
+# ISVs
+
+# SSVNs
+
+## Working with Globals (Part One): For, $Data and $Order
+
+## Working with Globals (Part Two): For, $Query and friends
