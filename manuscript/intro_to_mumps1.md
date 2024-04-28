@@ -1,4 +1,4 @@
-# A Quick Introduction to MUMPS
+# Introduction
 ## What is MUMPS?
 MUMPS is a text processing language with an integrated database. The database
 is integrated in the sense that you access the database directly from the
@@ -19,6 +19,9 @@ application of computing to medicine.
 MUMPS is the programming language behind Meditech, VISTA, RPMS (a cousin
 of VISTA), and notably, the most successful EMR in the world, Epic. Cerner, the
 other big EMR system used in the United States, does not use MUMPS.
+
+MUMPS found favor in banking, and is the technology in FIS's Profile and ACT's
+Quasar.  As far as I know, Quasar is not used anymore.
 
 MUMPS is often abbreviated as M.
 
@@ -75,27 +78,15 @@ The implementations are:
 
  * Intersystems Caché (aka OpenM)
  * Greystone Technology MUMPS (GT.M)
- * MV1
+ * YottaDB (a derivative of GT.M)
+ * RSM
  * M21
  * MiniM
- * Kevin O'Kane's MDH
 
-The most commonly used M implementations are Caché and GT.M. The main
-two differences between Caché and GT.M are:
+The most commonly used M implementations are Caché and GT.M/YottaDB. GT.M and
+YottaDB are used interchangably together.
 
- # Caché does not implement transactions properly, whereas GT.M provides full
- ACID compliant transactions. GT.M was born in the banking sector, where ACID
- compliance is critical to business operations, as money transfers need to be
- exact. Caché does not provide that guarantee; and in any case, electronic
- medical records such as VISTA and Epic were not coded to use transactions.
- Manuals explicitly tell the users that in an interrupted session data will be
- lost; and indeed, frequently it is, from the experience of the author.
-
- # Caché has subsumed MUMPS into a language called Caché ObjectScript. This
- language add semantics to MUMPS that don't exist in standard MUMPS, like
- braces and flexible spacing everywhere.
-
-In this section, it is worth mentioning the previous major M implementations: 
+In this section, it is worth mentioning the major previous major M implementations: 
 Digital Standard MUMPS, and Micronetics Standard MUMPS, abbreviated as DSM and MSM.
 These were the major platforms on which M ran for VISTA and RPMS. Intersystems,
 in an effort to consolidate the market, bought both DSM and MSM in the late
@@ -109,13 +100,89 @@ and what the M ISO/ANSI 95 standard explicitly allows or does not allow.
 
 I will be making frequent references to
 http://www.vistaexpertise.net/docs/pocket_guide.pdf. This is a pocket guide
-that can be perused to give you detailed information on a specific syntax. This
-is published by VISTA Expertise Network, my employer.
+that can be perused to give you detailed information on a specific syntax.
+
+## How to quickly get started for the following section
+To get started, we will use the YottaDB docker image. The image will save the
+routines we create in the current directory. In the M session, a semicolon indicates
+that the rest of the line is a comment.
+
+```
+% docker run -p 9080:9080 -v $PWD:/data --rm -it download.yottadb.com/yottadb/yottadb
+Unable to find image 'download.yottadb.com/yottadb/yottadb:latest' locally
+latest: Pulling from yottadb/yottadb
+Digest: sha256:20eadb838024b2ab1e32a9cd18c09b6533a0c8c79dc51fb39b89199d92b0fda5
+Status: Downloaded newer image for download.yottadb.com/yottadb/yottadb:latest
+
+YDB>d ^%RD ; show current routines
+
+Routine directory
+Routine: *
+
+Total of 0 routines.
+
+Routine:
+
+YDB>d ^%GD ; show current globals
+
+Global Directory
+
+Global ^
+
+Total of 0 globals.
+
+YDB>set ^x=1
+
+YDB>w ^x
+1
+YDB>d ^%GD
+
+Global Directory
+
+Global ^
+^x
+Total of 1 global.
+
+YDB>zed "foo" ; Opens Nano editor
+; In the editor, enter (do not forget the leading space on each line) ' write "foo",!<enter> quit'
+
+YDB>d ^foo
+foo
+
+YDB>; CTRL-D exits
+```
+
+Now we run it again and verify that foo is still there.
+
+```
+% docker run -v $PWD:/data --rm -it download.yottadb.com/yottadb/yottadb
+
+YDB>do ^foo
+foo
+
+YDB>zprint ^foo
+foo
+ write "foo",!
+ quit
+
+YDB>; CTRL-D exits
+```
+
+Outside of the container, we can edit the code like this:
+
+```
+% ls
+V7.0-001_x86_64	r		r2.00_x86_64
+% find . -name foo.m
+r2.00_x86_64/r/foo.m
+% vi `!!`
+vi `find . -name foo.m`
+```
 
 ## The Units of Execution
 Before getting into MUMPS, it worth noting some terminology.
 
-A program in MUMPS is called a routine. Better get used to it.
+A program in MUMPS is called a routine.
 
 A routine operates on data located in *global* variables. Global variables, are
 not, like in almost any other programming language I know, variables are are
@@ -124,6 +191,10 @@ which are stored on disk. Variables that are not global variables are called
 local variables, and they exist for the duration of execution. Local variables
 may be shared across all execution units (routines), but they are still called
 local variables.
+
+On YottaDB/GT.M, it's possible to write routines that don't access any globals;
+in that case, they run as if they are just normal Linux programs doing a certain
+job.
 
 ## Hello World 
 Let's look at a hello world example.
@@ -136,32 +207,95 @@ main
  quit
 ```
 
-## M language structure
-It's best to start the M language overview by looking at the syntax.
+The most important item that cofuses beginners is that any line that starts with
+no space is a label, and any line that starts with a space/tab is code to run.
+Usually, the first mistake a novice makes is writing the following:
 
+```
+write "hello world",!
+quit
+```
+
+The compiler, like all classic compilers, does not give you a clue what you did
+wrong:
+```
+	write "hello world",!
+	      ^-----
+		At column 7, line 1, source module /data/r2.00_x86_64/r/hello.m
+%YDB-E-CMD, Command expected but not found
+%YDB-E-CMD, Command expected but not found
+```
+
+## M language structure
 M code looks like this:
 ```
- <command> <space> <argument> <space> <command> <space> <argument>
+<label/space> <command> <space> <argument> <space> <command> <space> <argument>
+ ; This is a comment
+; Comments starting at column 1 are illegal, but accepted by GT.M/YottaDB.
+
+ ; A line with nothing (like above) is also illegal, but is commonly accepted by
+ ; all implementations, but you usually cannot send out routines in a "routine
+ ; archive" because an empty line marks the end of a routine.
 ```
 
 We immediately notice a couple of things: spaces matter, and there can be more
-than one command on a single line without a demarkation character, very commonly a
-semicolon (;) in most of today's common languages. A semicolon (used in the above
-program) is actually the comment line initiator, like '//' in C style languages.
+than one command on a single line. The first space (if a label is not there)
+can also be a tab. The convnetion of the first column being a label or
+otherwise just whitespace comes from assembly language; so does the use of a
+semicolon as a comment marker.
 
 Arguments to a single command can be combined together by using a comma.
 ```
- <command> <space> <argument1>,<argument2>,<argument3> <space> <command>...
+<label/space> <command> <space> <argument1>,<argument2>,<argument3> <space> <command>...
 ```
 This is actually the format we see in our example.
 
-One puzzling (but hard to notice) item is that "helloworld" and "main" are
-flush to the left, they are not a command, and every line under them contains
-a space at the beginning.  These items are all significant.
+## Case sensitivity and Command Abbreviation
+Commands are not case sensitive, but arguments are. E.g. these are equivalent.
+```
+ write 2+2
+ WRITE 2+2
+```
 
-I know I will forget to mention this; I just remembered while writing another
-section: Case sensitivity: Any M expression is not case sensitive; however, any
-elements entered by the user (e.g. labels, variable names) are case sensitive.
+These are not equivalent.
+```
+ write x
+ write X
+```
+
+Any routine labels are also not case-sensitive. These are not equivalent:
+```
+ write $$foo^myroutine
+ write $$FOO^myroutine
+```
+
+Routine names on different systems had different case-sensitivity rules, because
+on many operating systems (e.g. VMS, Windows, some MacOS file systems) file names
+are not case sensitive. Today, production systems for all M implementations are
+case sensitive for routines.
+
+Now let's talk about command abbreviations: Most production M code uses abbreviated
+forms of M commands. The reason is historical: when memory was very sparse, there is
+no reason to write `WRITE` when `W` will suffice. These are equivalent:
+```
+ write "hello world",!
+ w "hello world",!
+ W "hello world",!
+```
+
+## Labels, Level Lines, Formal Lines
+Here's an example for reference
+```
+label ; comment
+ write "I am a level line",!
+ quit
+label2 write "Label line with a level line",!
+ quit
+formallist(x,y,z) ; formal line with a formal list
+ write x+y+z
+ quit
+formallist(x,y,z) quit x+y+z ; Formal line with a level line.
+```
 
 ### Line Labels
 Any identifier flush to the left is called a line label. Essentially, like in
@@ -172,7 +306,7 @@ commands or a comment using a ';'.
 
 ### Level Line (really just the M code)
 Any line with at least one space or one tab at the beginning of the
-line is considered a code line. That space or tab can follow a label or
+line is considered a level line. That space or tab can follow a label or
 a formal list. A level line contains code to be executed. If the code is placed without
 a space/tab at the front, the first word in the code will be considered a line
 label, and the next argument won't be a command, and thus the interpreter will
@@ -196,17 +330,18 @@ test1 ; okay
 1     ; okay
 test% ; invalid
 ```
-In the current Standards and Conventions (https://www.voa.va.gov/DocumentView.aspx?DocumentID=182), the maximum allowable length of a label is 8 uppercase characters. GT.M and Cache allow a maximum lengh of 32 characters. There is no
-syntax error if you exceed this, but any characters following the 32 will not
-be used to distinguish between labels.
+GT.M/YottaDB and Cache allow a maximum lengh of 32 characters for labels. There
+is no syntax error if you exceed this, but any characters following the 32 will
+not be used to distinguish between labels.
 
-### The "Stack"
+## The "Stack"
 Since its first days, M implements a virtual (i.e. not implemented in the
 processor) stack. This stack is incremented every time a procedure or
 a function invocation takes place. Once the procedure or function is done, the
-stack is decremented back again. 
+stack is decremented back again. This looks like a stack in any other programming
+language.
 
-### Example Program
+## Example Program
 All right. We need to tie all of these concepts together.
 ```
 circumference ; calculate the circumference of a circle ; label line
@@ -233,10 +368,13 @@ calculate(radius) ; formal line. Formal list contains one variable
 
 ## MUMPS Expressions
 From the 1995 MUMPS Standard: 
+
+```
 The expression, expr , is the syntactic element which denotes the execution of a value-producing
 calculation. Expressions are made up of expression atoms separated by binary, string, arithmetic, or truthvalued
 operators.
 expr ::= expratom [ exprtail ] ...
+```
 
 An expression is an argument to commands that evaluate text rather than act on
 other types. For example, in
@@ -1021,6 +1159,7 @@ $Text(LABEL) ; LABEL ; only works when you are INSIDE the current routine
 ; Loop through the DATA table ine the routine, print each line, and quit when
 ; you reach <END>
 for i=1:1 set x=$Text(i+Data) quit:i["<END>"  write x,!
+```
 
 ### $Justify(), $J()
 I don't use this often enough to remember the syntax. It's a text formatting
@@ -1070,10 +1209,10 @@ $QueryLength
 
 ## Unconfustion table: Functions and Special Variables that share the same name
 NB: This table included non-standard function or variables. They will be marked
-as "ns". Using these is illegal in VISTA, but the author really wants them!!!
+as "ns". 
 
 | Intrinsic Function Name | Instrinsic Variable Name |
-| ======================  | ======================== |
+| ----------------------  | ------------------------ |
 | $P() = $Piece           | $P = $Principal          |
 | $T() = $Text            | $T = $Test               |
 | $J() = $Justify         | $J = $Job                |
