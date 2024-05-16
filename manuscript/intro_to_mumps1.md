@@ -207,7 +207,7 @@ main
  quit
 ```
 
-The most important item that cofuses beginners is that any line that starts with
+The most important item that confuses beginners is that any line that starts with
 no space is a label, and any line that starts with a space/tab is code to run.
 Usually, the first mistake a novice makes is writing the following:
 
